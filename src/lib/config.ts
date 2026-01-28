@@ -15,22 +15,12 @@ export const MODEL_ALIASES: Record<string, string> = {
 };
 
 export interface CLIConfig {
-  confluenceUrl: string;
-  confluenceToken: string;
   defaultModel: string;
   availableModels: string[];
   firstRunComplete: boolean;
 }
 
 const schema = {
-  confluenceUrl: {
-    type: 'string' as const,
-    default: '',
-  },
-  confluenceToken: {
-    type: 'string' as const,
-    default: '',
-  },
   defaultModel: {
     type: 'string' as const,
     default: 'claude-sonnet-4.5',
@@ -103,39 +93,25 @@ export function resetConfig(): void {
 }
 
 /**
- * Get Confluence URL - checks environment variables first, then config
+ * Get Confluence URL from environment variables only
  */
 export function getConfluenceUrl(): string {
-  return process.env.CONFLUENCE_URL || config.get('confluenceUrl');
+  return process.env.CONFLUENCE_URL || '';
 }
 
 /**
- * Set Confluence URL
- */
-export function setConfluenceUrl(url: string): void {
-  config.set('confluenceUrl', url.trim());
-}
-
-/**
- * Get Confluence token - checks environment variables first, then config
+ * Get Confluence token from environment variables only
  */
 export function getConfluenceToken(): string {
-  return process.env.CONFLUENCE_TOKEN || config.get('confluenceToken');
+  return process.env.CONFLUENCE_TOKEN || '';
 }
 
 /**
- * Set Confluence token
- */
-export function setConfluenceToken(token: string): void {
-  config.set('confluenceToken', token.trim());
-}
-
-/**
- * Check if Confluence is configured - checks environment variables first, then config
+ * Check if Confluence is configured via environment variables
  */
 export function isConfluenceConfigured(): boolean {
-  const url = process.env.CONFLUENCE_URL || config.get('confluenceUrl');
-  const token = process.env.CONFLUENCE_TOKEN || config.get('confluenceToken');
+  const url = process.env.CONFLUENCE_URL;
+  const token = process.env.CONFLUENCE_TOKEN;
   return !!(url && token);
 }
 
