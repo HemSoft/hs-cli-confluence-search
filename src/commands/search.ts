@@ -4,6 +4,7 @@ import boxen from 'boxen';
 import logSymbols from 'log-symbols';
 import gradient from 'gradient-string';
 import { getConfluenceUrl, getConfluenceToken, isConfluenceConfigured } from '../lib/config.js';
+import { showBanner } from '../lib/banner.js';
 
 interface SearchOptions {
   phrase: string;
@@ -26,6 +27,9 @@ export async function searchConfluence(options: SearchOptions) {
   const spinner = ora();
 
   try {
+    // Show beautiful banner
+    showBanner({ showTaglines: false });
+
     // Check if Confluence is configured
     if (!isConfluenceConfigured()) {
       spinner.fail('Confluence not configured');
