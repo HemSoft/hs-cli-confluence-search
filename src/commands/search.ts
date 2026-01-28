@@ -32,9 +32,15 @@ export async function searchConfluence(options: SearchOptions) {
       console.log(
         boxen(
           chalk.yellow('⚠️  Confluence credentials missing\n\n') +
-            chalk.white('Set up your Confluence instance:\n') +
-            chalk.cyan('  confluence-search config set confluenceUrl <url>\n') +
-            chalk.cyan('  confluence-search config set confluenceToken <token>\n\n') +
+            chalk.white('Set up your Confluence instance (choose one):\n\n') +
+            chalk.cyan('Option 1: Environment Variables') +
+            chalk.gray(' (recommended for CI/CD)\n') +
+            chalk.gray('  export CONFLUENCE_URL=<url>\n') +
+            chalk.gray('  export CONFLUENCE_TOKEN=<token>\n\n') +
+            chalk.cyan('Option 2: Config Storage') +
+            chalk.gray(' (persistent local)\n') +
+            chalk.gray('  confluence-search config set confluenceUrl <url>\n') +
+            chalk.gray('  confluence-search config set confluenceToken <token>\n\n') +
             chalk.dim('Example URL: https://yourcompany.atlassian.net/wiki/api/v2'),
           {
             padding: 1,

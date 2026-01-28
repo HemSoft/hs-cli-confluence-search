@@ -103,6 +103,13 @@ export function resetConfig(): void {
 }
 
 /**
+ * Get Confluence URL - checks environment variables first, then config
+ */
+export function getConfluenceUrl(): string {
+  return process.env.CONFLUENCE_URL || config.get('confluenceUrl');
+}
+
+/**
  * Set Confluence URL
  */
 export function setConfluenceUrl(url: string): void {
@@ -110,10 +117,10 @@ export function setConfluenceUrl(url: string): void {
 }
 
 /**
- * Get Confluence URL
+ * Get Confluence token - checks environment variables first, then config
  */
-export function getConfluenceUrl(): string {
-  return config.get('confluenceUrl');
+export function getConfluenceToken(): string {
+  return process.env.CONFLUENCE_TOKEN || config.get('confluenceToken');
 }
 
 /**
@@ -124,17 +131,12 @@ export function setConfluenceToken(token: string): void {
 }
 
 /**
- * Get Confluence token
- */
-export function getConfluenceToken(): string {
-  return config.get('confluenceToken');
-}
-
-/**
- * Check if Confluence is configured
+ * Check if Confluence is configured - checks environment variables first, then config
  */
 export function isConfluenceConfigured(): boolean {
-  return !!(getConfluenceUrl() && getConfluenceToken());
+  const url = process.env.CONFLUENCE_URL || config.get('confluenceUrl');
+  const token = process.env.CONFLUENCE_TOKEN || config.get('confluenceToken');
+  return !!(url && token);
 }
 
 /**
