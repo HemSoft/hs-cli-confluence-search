@@ -1,21 +1,17 @@
 import chalk from 'chalk';
 import gradient from 'gradient-string';
 
-// Confluence Search CLI logo
-// Sleek compass/search icon theme
+// ASCII art logo using box-drawing characters (same style as PRS)
 const LOGO_LINES = [
-  '   ███████████╗    ███████████╗',
-  '  ╔═══════════════╗╔═══════════════╗',
-  '  ║               ║║               ║',
-  '  ║    Search     ║║  Confluence   ║',
-  '  ║               ║║               ║',
-  '  ╚═══════════════╝╚═══════════════╝',
-  '         🔍   ⚡   📚',
+  '  ┌─┐┌─┐┌┐┌┌─┐┬  ┬ ┬┌─┐┌┐┌┌─┐┌─┐  ┌─┐┌─┐┌─┐┬─┐┌─┐┬ ┬',
+  '  │  │ ││││├┤ │  │ │├┤ ││││  ├┤   └─┐├┤ ├─┤├┬┘│  ├─┤',
+  '  └─┘└─┘┘└┘└  ┴─┘└─┘└─┘┘└┘└─┘└─┘  └─┘└─┘┴ ┴┴└─└─┘┴ ┴',
 ];
 
-// Gradient definitions
-const cyan = gradient(['#00f0ff', '#00ff87']);
+// Gradient definitions (same as PRS)
+const vice = gradient(['#ff2e97', '#00f0ff']);
 const gold = gradient(['#bf953f', '#fcf6ba', '#b38728', '#fbf5b7', '#aa771c']);
+const greenGlow = gradient(['#00ff87', '#60efff']);
 
 export interface BannerOptions {
   version?: string;
@@ -23,28 +19,33 @@ export interface BannerOptions {
 }
 
 /**
- * Display the CLI banner with HemSoft branding
+ * Display the Confluence Search CLI banner
  */
 export function showBanner(options: BannerOptions = {}) {
-  const { version = '1.0.0', showTaglines = true } = options;
+  const { version = 'v1.0.0', showTaglines = true } = options;
 
-  console.log();
-
-  // Display logo with gradient
-  for (const line of LOGO_LINES) {
-    console.log(cyan(line));
-  }
-
-  // Version and branding
-  console.log('  ' + chalk.dim(`version ${version}`));
+  console.log(vice(LOGO_LINES[0]!));
+  console.log(vice(LOGO_LINES[1]!) + '  ' + greenGlow(version));
+  console.log(vice(LOGO_LINES[2]!));
   console.log('  ' + gold('✦ by HemSoft Developments ✦'));
 
-  // Optional taglines
   if (showTaglines) {
-    console.log(chalk.dim('  ═══════════════════════════════════════════'));
-    console.log(chalk.hex('#00ff87')('  ⚡ ') + chalk.bold('Find anything in Confluence fast'));
-    console.log(chalk.hex('#00f0ff')('  🎯 ') + chalk.dim('Beautiful terminal experience'));
+    console.log(chalk.dim('  ══════════════════════════════════════════'));
+    console.log(chalk.hex('#ff2e97')('  🔍 ') + chalk.bold('AI-Powered Confluence Search'));
+    console.log(chalk.hex('#00f0ff')('  🤖 ') + chalk.dim('GitHub Copilot SDK'));
   }
+}
 
-  console.log();
+/**
+ * Get just the logo as a string (for embedding elsewhere)
+ */
+export function getLogo(): string {
+  return LOGO_LINES.map((line) => vice(line)).join('\n');
+}
+
+/**
+ * Get the HemSoft branding line
+ */
+export function getBranding(): string {
+  return gold('✦ by HemSoft Developments ✦');
 }

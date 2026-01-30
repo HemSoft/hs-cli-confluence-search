@@ -93,26 +93,38 @@ export function resetConfig(): void {
 }
 
 /**
- * Get Confluence URL from environment variables only
+ * Default Confluence URL for Relias
+ */
+const DEFAULT_CONFLUENCE_URL = 'https://relias.atlassian.net/wiki';
+
+/**
+ * Get Confluence URL from environment variables or use Relias default
  */
 export function getConfluenceUrl(): string {
-  return process.env.CONFLUENCE_URL || '';
+  return process.env.ATLASSIAN_URL || DEFAULT_CONFLUENCE_URL;
 }
 
 /**
- * Get Confluence token from environment variables only
+ * Get Atlassian API token from environment variables
  */
 export function getConfluenceToken(): string {
-  return process.env.CONFLUENCE_TOKEN || '';
+  return process.env.ATLASSIAN_API_TOKEN || '';
+}
+
+/**
+ * Get Atlassian email from environment variables
+ */
+export function getConfluenceUsername(): string {
+  return process.env.ATLASSIAN_EMAIL || '';
 }
 
 /**
  * Check if Confluence is configured via environment variables
  */
 export function isConfluenceConfigured(): boolean {
-  const url = process.env.CONFLUENCE_URL;
-  const token = process.env.CONFLUENCE_TOKEN;
-  return !!(url && token);
+  const token = process.env.ATLASSIAN_API_TOKEN;
+  const email = process.env.ATLASSIAN_EMAIL;
+  return !!(token && email);
 }
 
 /**

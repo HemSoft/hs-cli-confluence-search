@@ -4,31 +4,38 @@
 
 ## Project Mission
 
-This repository is the **canonical HemSoft CLI template** - the foundation for all CLI tools built under the HemSoft Developments brand. It establishes patterns, quality standards, and architectural decisions that propagate to all derived CLI tools.
+This repository is the **canonical HemSoft CLI template** - the foundation for all CLI tools built under the HemSoft
+Developments brand. It establishes patterns, quality standards, and architectural decisions that propagate to all
+derived CLI tools.
 
-**Your Role**: When working on this repository, you're not just editing code - you're shaping the foundation that dozens of CLI tools will inherit. Every change here has a multiplier effect.
+**Your Role**: When working on this repository, you're not just editing code - you're shaping the foundation that
+dozens of CLI tools will inherit. Every change here has a multiplier effect.
 
 ## Core Principles
 
 ### 1. **Template First, Application Second**
+
 - This is a template repository, not a standalone application
 - Changes should benefit ALL future CLI tools, not just one use case
 - Favor configurability over hard-coding
 - Include examples but make them easy to replace
 
 ### 2. **Developer Experience is Paramount**
+
 - CLI authors should be able to customize quickly
 - Patterns should be obvious and consistent
 - Documentation should be comprehensive
 - Defaults should be sensible but overridable
 
 ### 3. **Quality is Non-Negotiable**
+
 - Pre-commit hooks enforce standards automatically
 - TypeScript strict mode catches errors early
 - Every command should handle errors gracefully
 - All resources must be cleaned up (no leaks)
 
 ### 4. **Branded, Beautiful, Professional**
+
 - Terminal output should delight users
 - Consistent use of colors, symbols, and formatting
 - Help text should be readable and well-structured
@@ -38,7 +45,7 @@ This repository is the **canonical HemSoft CLI template** - the foundation for a
 
 ### Separation of Concerns
 
-```
+```text
 src/
 ├── index.ts           # CLI framework only - no business logic
 ├── commands/          # Command implementations - one file per command
@@ -51,11 +58,13 @@ src/
     └── config.ts     # Configuration storage
 ```
 
-**Key Insight**: `commands/` contains command-specific logic. `lib/` contains reusable services. `index.ts` only wires things together.
+**Key Insight**: `commands/` contains command-specific logic. `lib/` contains reusable services.
+`index.ts` only wires things together.
 
 ### Service-Oriented Design
 
 Each service in `lib/` should:
+
 - Have a single, clear responsibility
 - Be independently testable
 - Manage its own resources (open/close paradigm)
@@ -109,7 +118,7 @@ export async function someCommand(options: Options) {
 
 - **TypeScript**: Strict mode, explicit types, no `any`
 - **Formatting**: Prettier handles all formatting (don't fight it)
-- **Naming**: 
+- **Naming**:
   - Files: kebab-case (`my-command.ts`)
   - Functions: camelCase (`myFunction`)
   - Interfaces: PascalCase (`MyOptions`)
@@ -132,12 +141,14 @@ import ora from 'ora';
 ### When to Add to Template
 
 ✅ **Add when**:
+
 - Feature benefits most CLI tools (auth, config, help styling)
 - It's a common pattern (command structure, error handling)
 - It improves developer experience (better defaults, clearer examples)
 - It enforces quality (pre-commit hooks, strict TypeScript)
 
 ❌ **Don't add when**:
+
 - It's specific to one CLI tool's domain
 - It adds significant complexity for rare use cases
 - It's experimental or unstable
@@ -146,6 +157,7 @@ import ora from 'ora';
 ### Feature Integration Checklist
 
 When adding a new feature:
+
 - [ ] Does it have a clear, single responsibility?
 - [ ] Is it documented in README.md?
 - [ ] Does it work cross-platform (Windows, macOS, Linux)?
@@ -183,16 +195,19 @@ When adding a new feature:
 ### Task: Refactor for Maintainability
 
 **Before refactoring**:
+
 - Understand why the current code exists
 - Ensure tests pass (or write tests first)
 - Check if pattern is used elsewhere
 
 **During refactoring**:
+
 - Maintain backward compatibility if possible
 - Update all affected files
 - Keep commits logical and atomic
 
 **After refactoring**:
+
 - Update documentation
 - Test all affected commands
 - Verify quality checks pass
@@ -200,6 +215,7 @@ When adding a new feature:
 ## Testing Strategy
 
 Currently manual testing; consider adding:
+
 - Unit tests for `lib/` services
 - Integration tests for commands
 - Snapshot tests for help output
@@ -210,18 +226,21 @@ Currently manual testing; consider adding:
 ## Security Considerations
 
 ### Authentication
+
 - Never store tokens in code or config
 - Rely on GitHub CLI (`gh`) for credential management
 - Document auth requirements clearly
 - Support multi-account scenarios
 
 ### Dependencies
+
 - Regularly update dependencies for security patches
 - Vet new dependencies carefully (npm audit)
 - Prefer well-maintained, popular packages
 - Document any security-sensitive dependencies
 
 ### User Data
+
 - Config should be user-readable JSON
 - Never store sensitive data in config
 - Document what data is persisted where
@@ -275,6 +294,7 @@ await ai.close();
 ### Inline Documentation
 
 Help text should be:
+
 - Concise but complete
 - Include examples where helpful
 - Formatted consistently
@@ -284,7 +304,8 @@ Help text should be:
 
 ### Issue: Pre-commit hooks not running
 
-**Check**: 
+**Check**:
+
 1. Is Husky installed? (`npm install`)
 2. Does `.husky/pre-commit` exist?
 3. Try: `npm run prepare`
@@ -292,6 +313,7 @@ Help text should be:
 ### Issue: TypeScript errors
 
 **Check**:
+
 1. Run `npm run type-check` for details
 2. Are imports using `.js` extension?
 3. Are types exported/imported correctly?
@@ -300,6 +322,7 @@ Help text should be:
 ### Issue: Auth not working
 
 **Check**:
+
 1. Is `gh` CLI installed?
 2. Is user authenticated? (`gh auth status`)
 3. Does user have Copilot access?
@@ -308,6 +331,7 @@ Help text should be:
 ### Issue: Build succeeds but runtime fails
 
 **Check**:
+
 1. Are imports using `.js` extension?
 2. Is `type: "module"` in package.json?
 3. Are all dependencies installed?
@@ -316,6 +340,7 @@ Help text should be:
 ## Version Strategy
 
 Follow semantic versioning:
+
 - **Patch** (1.0.x): Bug fixes, doc updates, minor improvements
 - **Minor** (1.x.0): New features, non-breaking changes
 - **Major** (x.0.0): Breaking changes, major rewrites
@@ -335,6 +360,7 @@ When you make changes:
 ## Success Metrics
 
 A successful template change:
+
 - ✅ Works out of the box with `npm install && npm run dev`
 - ✅ Passes all quality checks (`npm run check`)
 - ✅ Is well-documented in README and code
@@ -352,4 +378,5 @@ A successful template change:
 
 ---
 
-**Remember**: This template is infrastructure. Treat it with the care and rigor you'd give to any critical system that others depend on.
+**Remember**: This template is infrastructure. Treat it with the care and rigor you'd give to any critical system
+that others depend on.

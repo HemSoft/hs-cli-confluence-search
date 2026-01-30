@@ -2,7 +2,8 @@
 
 > 🚀 A production-ready CLI template for building AI-powered command-line tools
 
-This template provides a solid foundation for creating professional CLI tools with AI capabilities, beautiful terminal UI, and enterprise-grade quality tooling.
+This template provides a solid foundation for creating professional CLI tools with AI capabilities,
+beautiful terminal UI, and enterprise-grade quality tooling.
 
 ## ✨ What's Included
 
@@ -89,6 +90,7 @@ git init
 ### 2. Customize Your CLI
 
 **Update `package.json`:**
+
 ```json
 {
   "name": "@yourorg/your-cli-name",
@@ -100,22 +102,26 @@ git init
 ```
 
 **Update branding in `src/lib/banner.ts`:**
+
 - Change the ASCII logo (use [patorjk.com/software/taag](https://patorjk.com/software/taag/))
 - Customize gradient colors
 - Update branding text
 - Modify version and taglines
 
 **Update `src/lib/config.ts`:**
+
 - Change `projectName` in the Conf constructor
 - Add any custom config fields you need
 
 **Update `src/index.ts`:**
+
 - Change `program.name()` to your CLI name
 - Update description
 - Add your custom commands
 
 **Update auth references:**
 Find and replace in `src/commands/auth.ts` and `src/commands/config.ts`:
+
 - `"HS CLI"` → Your CLI name
 - `"hs-cli"` → Your CLI command name
 
@@ -126,6 +132,7 @@ npm install
 ```
 
 This will:
+
 - Install all dependencies
 - Set up Husky pre-commit hooks automatically
 - Configure git hooks for quality checks
@@ -155,6 +162,7 @@ code .
 ```
 
 The dev container includes:
+
 - Node.js 22 LTS with all dependencies
 - GitHub CLI for authentication
 - All VS Code extensions pre-installed
@@ -211,13 +219,14 @@ The template includes automatic quality checks that run before every commit:
 If any check fails, the commit is blocked until you fix the issues.
 
 **To skip hooks** (not recommended):
+
 ```bash
 git commit --no-verify
 ```
 
 ## 🏗️ Project Structure
 
-```
+```text
 hs-cli-template/
 ├── src/
 │   ├── index.ts              # Main CLI entry point
@@ -327,6 +336,7 @@ const myGradient = gradient(['#ff0000', '#00ff00']);
 ### Styled Help
 
 The template includes custom help styling with:
+
 - Lightning bolt for Usage
 - Gradient-decorated section headers
 - Italic gold descriptions with sparkles
@@ -351,6 +361,7 @@ await ai.close();
 ```
 
 **Tips:**
+
 - Use different system messages for different use cases
 - Model can be overridden per instance
 - Always call `close()` (use try/finally)
@@ -377,6 +388,7 @@ export interface CLIConfig {
 ```
 
 Config is stored at:
+
 - Windows: `%APPDATA%/hs-cli/Config/config.json`
 - macOS: `~/Library/Preferences/hs-cli/Config/config.json`
 - Linux: `~/.config/hs-cli/Config/config.json`
@@ -394,6 +406,7 @@ The template uses strict TypeScript settings:
 ## 📦 Dependencies
 
 ### Production
+
 - `@github/copilot-sdk` - AI capabilities
 - `commander` - CLI framework
 - `chalk`, `boxen`, `ora` - Terminal styling
@@ -403,7 +416,8 @@ The template uses strict TypeScript settings:
 - `cli-table3` - Table formatting
 - `log-symbols` - Status symbols
 
-### Development
+### Dev Dependencies
+
 - `typescript` - Type system
 - `tsx` - TypeScript execution
 - `eslint` - Linting
@@ -416,6 +430,7 @@ The template uses strict TypeScript settings:
 ### Command Implementation
 
 ✅ **Do:**
+
 - Always close AIService in finally block
 - Use spinners for long operations
 - Provide helpful error messages
@@ -423,6 +438,7 @@ The template uses strict TypeScript settings:
 - Handle errors gracefully
 
 ❌ **Don't:**
+
 - Leave sessions open
 - Use console.log for commands (use chalk/boxen)
 - Forget to call `process.exit(1)` on errors
@@ -431,6 +447,7 @@ The template uses strict TypeScript settings:
 ### Code Quality
 
 ✅ **Do:**
+
 - Write type-safe code
 - Use Prettier formatting
 - Follow ESLint rules
@@ -438,6 +455,7 @@ The template uses strict TypeScript settings:
 - Test before committing
 
 ❌ **Don't:**
+
 - Use `any` types
 - Skip type annotations
 - Ignore linting errors
@@ -494,6 +512,6 @@ MIT © HemSoft Developments
 
 ---
 
-**Built with ❤️ by HemSoft Developments**
+Built with ❤️ by HemSoft Developments
 
-*This template is based on the architecture of Smart Git CLI*
+This template is based on the architecture of Smart Git CLI

@@ -2,9 +2,23 @@ import chalk from 'chalk';
 import ora from 'ora';
 import boxen from 'boxen';
 import logSymbols from 'log-symbols';
-import gradient from 'gradient-string';
-import { getConfluenceUrl, getConfluenceToken, isConfluenceConfigured } from '../lib/config.js';
+import Table from 'cli-table3';
+import {
+  getConfluenceUrl,
+  getConfluenceToken,
+  getConfluenceUsername,
+  isConfluenceConfigured,
+} from '../lib/config.js';
 import { showBanner } from '../lib/banner.js';
+
+/**
+ * Create an OSC 8 hyperlink that works in VS Code terminal and other modern terminals.
+ * This works in VS Code terminal, Windows Terminal, and other modern terminals.
+ */
+function hyperlink(text: string, url: string): string {
+  // OSC 8 hyperlink format: \x1b]8;;URL\x07TEXT\x1b]8;;\x07
+  return `\x1b]8;;${url}\x07${text}\x1b]8;;\x07`;
+}
 
 interface SearchOptions {
   phrase: string;
@@ -16,8 +30,10 @@ interface SearchResult {
   id: string;
   title: string;
   space: string;
-  excerpt: string;
+  spaceKey: string;
   url: string;
+  updatedBy: string;
+  updatedDate: string;
 }
 
 /**
@@ -36,10 +52,11 @@ export async function searchConfluence(options: SearchOptions) {
       console.log(
         boxen(
           chalk.yellow('⚠️  Environment variables required\n\n') +
-            chalk.white('Set your Confluence credentials:\n\n') +
-            chalk.cyan('export CONFLUENCE_URL=<url>\n') +
-            chalk.cyan('export CONFLUENCE_TOKEN=<token>\n\n') +
-            chalk.dim('Example URL: https://yourcompany.atlassian.net/wiki/api/v2\n') +
+            chalk.white('Set your Atlassian credentials:\n\n') +
+            chalk.cyan('ATLASSIAN_API_TOKEN=<token>\n') +
+            chalk.cyan('ATLASSIAN_EMAIL=<your-email>\n\n') +
+            chalk.dim('Optional (defaults to Relias):\n') +
+            chalk.cyan('ATLASSIAN_URL=<confluence-url>\n\n') +
             chalk.dim(
               'Create API token: https://id.atlassian.com/manage-profile/security/api-tokens'
             ),
@@ -58,18 +75,25 @@ export async function searchConfluence(options: SearchOptions) {
 
     const confluenceUrl = getConfluenceUrl();
     const confluenceToken = getConfluenceToken();
+    const confluenceUsername = getConfluenceUsername();
     const limit = options.limit || 10;
 
     spinner.start(chalk.cyan(`Searching Confluence for "${chalk.bold(options.phrase)}"...`));
 
-    // Query Confluence API
-    const searchUrl = new URL(`${confluenceUrl.replace(/\/$/, '')}/api/v2/search`);
-    searchUrl.searchParams.append('text', options.phrase);
+    // Query Confluence REST API (v1 CQL search)
+    const searchUrl = new URL(`${confluenceUrl.replace(/\/$/, '')}/rest/api/content/search`);
+    searchUrl.searchParams.append('cql', `type=page AND text~"${options.phrase}"`);
     searchUrl.searchParams.append('limit', limit.toString());
+    searchUrl.searchParams.append('expand', 'space,history,version');
+
+    // Use Basic auth (email:token) like the reference project
+    const authString = confluenceUsername
+      ? Buffer.from(`${confluenceUsername}:${confluenceToken}`).toString('base64')
+      : Buffer.from(`user:${confluenceToken}`).toString('base64');
 
     const response = await fetch(searchUrl.toString(), {
       headers: {
-        Authorization: `Bearer ${confluenceToken}`,
+        Authorization: `Basic ${authString}`,
         'Content-Type': 'application/json',
       },
     });
@@ -79,13 +103,13 @@ export async function searchConfluence(options: SearchOptions) {
         spinner.fail('Authentication failed');
         console.log(
           chalk.red(logSymbols.error),
-          'Invalid Confluence token. Please update your configuration.'
+          'Invalid ATLASSIAN_API_TOKEN. Please check your token and username.'
         );
       } else if (response.status === 404) {
         spinner.fail('Not found');
         console.log(
           chalk.red(logSymbols.error),
-          'Confluence URL not found. Please verify your configuration.'
+          'Confluence API endpoint not found. Please verify CONFLUENCE_URL.'
         );
       } else {
         spinner.fail('Search failed');
@@ -98,16 +122,18 @@ export async function searchConfluence(options: SearchOptions) {
       results?: Array<{
         id: string;
         title: string;
-        container?: { title: string };
-        excerpt?: string;
+        space?: { key: string; name: string };
+        history?: { createdDate?: string };
+        version?: { when?: string; by?: { displayName?: string } };
         _links?: { webui?: string };
       }>;
     } = (await response.json()) as {
       results?: Array<{
         id: string;
         title: string;
-        container?: { title: string };
-        excerpt?: string;
+        space?: { key: string; name: string };
+        history?: { createdDate?: string };
+        version?: { when?: string; by?: { displayName?: string } };
         _links?: { webui?: string };
       }>;
     };
@@ -116,47 +142,108 @@ export async function searchConfluence(options: SearchOptions) {
       data.results?.map((item) => ({
         id: item.id,
         title: item.title || 'Untitled',
-        space: item.container?.title || 'Unknown',
-        excerpt: item.excerpt ? item.excerpt.replace(/<[^>]*>/g, '') : 'No preview available',
-        url: `${confluenceUrl.replace(/\/$/, '')}/wiki${item._links?.webui || ''}`,
+        space: item.space?.name || item.space?.key || 'Unknown',
+        spaceKey: item.space?.key || '',
+        // Use short pageId URL format to avoid cli-table3 truncation issues with long URLs
+        url: `${confluenceUrl.replace(/\/$/, '')}/pages/viewpage.action?pageId=${item.id}`,
+        updatedBy: item.version?.by?.displayName || 'Unknown',
+        updatedDate: item.version?.when
+          ? new Date(item.version.when).toISOString().split('T')[0]!
+          : 'N/A',
       })) || [];
 
-    spinner.succeed(`Found ${results.length} result${results.length !== 1 ? 's' : ''}`);
+    spinner.stop();
 
     if (results.length === 0) {
       console.log(chalk.gray('No documents found matching your search.\nTry different keywords.'));
       return;
     }
 
-    // Display results with beautiful formatting
-    for (let i = 0; i < results.length; i++) {
-      const result = results[i]!;
-      const gradientText = gradient(['#0052CC', '#00A4EF']);
+    // Fixed column widths (like PRS project)
+    const titleWidth = 60;
+    const fixedWidths = { space: 8, updatedBy: 18, date: 12 };
+    // Table width = sum of colWidths + 5 borders; banner content = table width - 2 (for ╔ and ╗)
+    const bannerWidth =
+      titleWidth + fixedWidths.space + fixedWidths.updatedBy + fixedWidths.date + 3;
 
-      const heading = gradientText(`[${i + 1}/${results.length}] ${result.title}`);
-      const content =
-        chalk.gray(`📁 Space: `) +
-        chalk.cyan(result.space) +
-        '\n\n' +
-        chalk.gray('📄 Preview:\n') +
-        chalk.white(result.excerpt.substring(0, 200)) +
-        (result.excerpt.length > 200 ? chalk.gray('...') : '') +
-        '\n\n' +
-        chalk.dim(`🔗 ${result.url}`);
+    // Build header banner
+    const titleText = `Confluence Search Results (${results.length} found)`;
+    const currentTime = new Date().toLocaleTimeString();
+    const centerPos = Math.floor(bannerWidth / 2);
+    const centerStart = centerPos - Math.floor(titleText.length / 2);
+    const spacesToCenter = Math.max(1, centerStart - 1);
+    const spacesToRight = Math.max(
+      1,
+      bannerWidth - spacesToCenter - titleText.length - currentTime.length - 2
+    );
 
-      console.log(
-        boxen(heading + '\n' + content, {
-          padding: 1,
-          margin: 1,
-          borderStyle: 'round',
-          borderColor: '#0052CC',
-        })
-      );
+    const styledLine =
+      ' ' +
+      ' '.repeat(spacesToCenter) +
+      titleText +
+      ' '.repeat(spacesToRight) +
+      chalk.dim(currentTime) +
+      ' ';
+
+    console.log(chalk.cyan.bold(`╔${'═'.repeat(bannerWidth)}╗`));
+    console.log(chalk.cyan.bold('║') + styledLine + chalk.cyan.bold('║'));
+    console.log(chalk.cyan.bold(`╚${'═'.repeat(bannerWidth)}╝`));
+
+    // Create table with fixed column widths (required for hyperlinks to display correctly)
+    const table = new Table({
+      head: [
+        chalk.cyan.bold('Title'),
+        chalk.cyan.bold('Space'),
+        chalk.cyan.bold('Updated By'),
+        chalk.cyan.bold('Date'),
+      ],
+      style: {
+        head: [],
+        border: ['cyan'],
+        compact: false,
+      },
+      chars: {
+        top: '─',
+        'top-mid': '┬',
+        'top-left': '┌',
+        'top-right': '┐',
+        bottom: '─',
+        'bottom-mid': '┴',
+        'bottom-left': '└',
+        'bottom-right': '┘',
+        left: '│',
+        'left-mid': '├',
+        mid: '─',
+        'mid-mid': '┼',
+        right: '│',
+        'right-mid': '┤',
+        middle: '│',
+      },
+      colWidths: [titleWidth, fixedWidths.space, fixedWidths.updatedBy, fixedWidths.date],
+      wordWrap: false,
+    });
+
+    // Add rows - truncate titles first, then apply hyperlink (like PRS)
+    for (const result of results) {
+      let title = result.title;
+      const maxTitleLen = titleWidth - 4;
+      if (title.length > maxTitleLen) {
+        title = `${title.substring(0, maxTitleLen - 3)}...`;
+      }
+
+      // Create clickable link using OSC 8 hyperlink escape sequences
+      // This works in VS Code terminal, Windows Terminal, and other modern terminals
+      const titleLink = chalk.cyan(hyperlink(title, result.url));
+
+      table.push([
+        titleLink,
+        chalk.yellow(result.spaceKey),
+        chalk.dim(result.updatedBy),
+        chalk.gray(result.updatedDate),
+      ]);
     }
 
-    console.log(
-      chalk.dim(`\n✨ Search completed in Confluence | Page 1/${Math.ceil(results.length / limit)}`)
-    );
+    console.log(table.toString());
   } catch (error) {
     spinner.fail('Search error');
     console.error(

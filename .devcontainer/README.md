@@ -37,6 +37,7 @@ This devcontainer is optimized for GitHub Copilot Workspace and will work seamle
 ## Post-Create Setup
 
 The container automatically runs:
+
 ```bash
 npm install && npm run prepare
 ```
@@ -71,7 +72,8 @@ gh auth status
 
 ## Customization
 
-You can customize the devcontainer by editing `.devcontainer/devcontainer.json`. See the [devcontainer.json reference](https://containers.dev/implementors/json_reference/) for all available options.
+You can customize the devcontainer by editing `.devcontainer/devcontainer.json`.
+See the [devcontainer.json reference](https://containers.dev/implementors/json_reference/) for all available options.
 
 ## Troubleshooting
 
