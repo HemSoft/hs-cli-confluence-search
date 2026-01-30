@@ -93,10 +93,33 @@ function styleHelpText(text: string): string {
   return styledLines.join('\n');
 }
 
+// Track whether banner has been shown to avoid duplication
+let bannerShown = false;
+
+function showBannerOnce() {
+  if (!bannerShown) {
+    bannerShown = true;
+    showBanner();
+    console.log('');
+  }
+}
+
 // Configure styled output for all commands
 program.configureOutput({
-  writeOut: (str) => process.stdout.write(styleHelpText(str)),
-  writeErr: (str) => process.stderr.write(chalk.red(str)),
+  writeOut: (str) => {
+    // Show banner before help output
+    if (str.includes('Usage:')) {
+      showBannerOnce();
+    }
+    process.stdout.write(styleHelpText(str));
+  },
+  writeErr: (str) => {
+    // Show banner before error messages that will be followed by help
+    if (str.includes('missing required argument') || str.includes('error:')) {
+      showBannerOnce();
+    }
+    process.stderr.write(chalk.red(str));
+  },
 });
 
 // Store global model option
@@ -175,9 +198,8 @@ program
     searchConfluence({ phrase, limit: parseInt(options.limit), model: globalModel })
   );
 
-// If no arguments provided, show banner and help
+// If no arguments provided, show help (banner will be shown automatically)
 if (process.argv.length === 2) {
-  showBanner();
   program.help({ error: false });
 }
 
